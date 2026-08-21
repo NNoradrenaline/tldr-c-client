@@ -117,7 +117,7 @@ curl_string_init(struct curl_string *str)
     if (str->str == NULL)
         exit(EXIT_FAILURE);
 
-    str->str[1024] = '\0';
+    str->str[0] = '\0';
 }
 
 size_t

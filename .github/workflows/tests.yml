@@ -41,3 +41,44 @@ jobs:
 
     - name: Test printing tldr page
       run: ./tldr tar
+
+    - name: Test missing page exits cleanly
+      run: |
+        set +e
+        ./tldr this-page-definitely-does-not-exist-124-regression
+        status=$?
+        set -e
+        if [ "$status" -ne 1 ]; then
+          echo "Expected exit status 1 for a missing page, got $status"
+          exit 1
+        fi
+
+  sanitizer:
+    runs-on: macos-latest
+    name: macOS AddressSanitizer
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Install Dependencies
+      run: |
+        brew update
+        brew install curl libzip
+
+    - name: Compile with AddressSanitizer
+      run: |
+        make V=1 CC=clang LD=clang \
+          CFLAGS="-ggdb -O0 -fno-omit-frame-pointer -fsanitize=address" \
+          LDFLAGS="-fsanitize=address"
+
+    - name: Test missing page under AddressSanitizer
+      run: |
+        set +e
+        ./tldr this-page-definitely-does-not-exist-124-regression
+        status=$?
+        set -e
+        if [ "$status" -ne 1 ]; then
+          echo "Expected exit status 1 for a missing page, got $status"
+          exit 1
+        fi
